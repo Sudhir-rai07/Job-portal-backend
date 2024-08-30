@@ -38,7 +38,7 @@ export const SignUp = async (req, res) => {
 
     res
       .status(200)
-      .json({ success: "User created successfully", token: token });
+      .json({ message: "User created successfully", token: token });
   } catch (error) {
     console.log("Error in SignUp controller ", error);
     res.status(500).json({ error: "Internal server error" });
@@ -67,7 +67,7 @@ export const Login = async (req, res) => {
       secure: process.env.NODE_ENV !== "development",
     });
 
-    res.status(200).json({ success: "Logged in", token: token });
+    res.status(200).json({ message: "Logged in", token: token });
   } catch (error) {
     console.log('Error in Login controller ', error)
     res.status(500).json({error: "Internal server error"})
@@ -79,7 +79,7 @@ export const Logout = async (req, res) =>{
     res.cookie("token", "", {
 maxAge: 0
     })
-    res.status(200).json({success: "Logged out"})
+    res.status(200).json({message: "Logged out"})
   } catch (error) {
     console.log('Error in logout controller ', error)
     res.status(500).json({error: "Internal server error"})
