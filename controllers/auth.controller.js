@@ -87,11 +87,13 @@ maxAge: 0
 }
 
 
-// export const GetMe = async (req, res) =>{
-//   try {
-  
-//     res.status(200).json()
-//   } catch (error) {
+export const GetMe = async (req, res) =>{
+  const {userId} = req.user
+  try {
+    const user = await User.findById(userId)
+    res.status(200).json(user)
+    res.status(200).json()
+  } catch (error) {
     
-//   }
-// }
+  }
+}
