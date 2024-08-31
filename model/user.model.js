@@ -25,6 +25,7 @@ const user_schema = new mongoose.Schema(
     },
     profileImage: String,
     resume: String,
+    about: String,
     skills: [String],
   },
   { timestamps: true }
