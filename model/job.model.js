@@ -51,6 +51,13 @@ const jobSchema = new mongoose.Schema(
     application_deadline: {
       type: Date,
     },
+    isAccepting: {
+      type: Boolean,
+      default: true
+    },
+    applications:[
+      {type:mongoose.Schema.Types.ObjectId, ref: "Application", default:[]}
+    ]
   },
   { timestamps: true }
 );
