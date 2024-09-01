@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import User from "../model/user.model.js";
 import jwt from "jsonwebtoken";
+import { v2 as Cloudinary } from "cloudinary";
 
 export const SignUp = async (req, res) => {
   const { username, fullname, email, password } = req.body;
@@ -95,5 +96,39 @@ export const GetMe = async (req, res) =>{
     res.status(200).json()
   } catch (error) {
     
+  }
+}
+
+export const UpdateProfile = async (req, res) =>{
+  const {resume,about, skills} = req.body
+  let profileImage = req.file
+  const {userId} = req.user
+  if(profileImage) console.log(profileImage)
+  try {
+    const user = await User.findByIdAndUpdate(userId, {})
+    if(!user) return res.status(400).json({error: "User not found"})
+
+    if(profileImage){
+      if(user.profileImage){
+        await Cloudinary.uploader.destroy(user.profileImage.split("/").pop().split(".")[0])
+      }
+
+      const cloudinaryUploadResponse = await Cloudinary.uploader.upload(profileImage.path)
+      profileImage = cloudinaryUploadResponse.secure_url;
+    }
+    
+
+    
+    user.resume = resume || user.resume
+    user.about = about || user.about
+    user.skills = skills || user.skills
+    user.profileImage = profileImage || user.profileImage
+
+    await user.save();
+console.log(profileImage)
+    res.status(200).json({message: "Profile updated", user})
+  } catch (error) {
+    console.log("Error in update-profile controller ", error)
+    res.status(500).json({error: "Internal server error"})
   }
 }

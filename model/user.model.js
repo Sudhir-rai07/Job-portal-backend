@@ -23,10 +23,22 @@ const user_schema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    profileImage: String,
-    resume: String,
-    about: String,
-    skills: [String],
+    profileImage: {
+      type: String,
+      default: ""
+    },
+    resume: {
+      type: String,
+      default: ""
+    },
+    about: {
+      type: String,
+      default: ""
+    },
+    skills: {
+      type: [String],
+      default: []
+    },
   },
   { timestamps: true }
 );
