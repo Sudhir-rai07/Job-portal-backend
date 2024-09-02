@@ -2,6 +2,9 @@ import bcrypt from "bcryptjs";
 import User from "../model/user.model.js";
 import jwt from "jsonwebtoken";
 import { v2 as Cloudinary } from "cloudinary";
+import Token from "../model/auth.token.model.js";
+import crypto from 'crypto'
+import transporter from '../utils/email.setup.js'
 
 export const SignUp = async (req, res) => {
   const { username, fullname, email, password } = req.body;
@@ -37,9 +40,31 @@ export const SignUp = async (req, res) => {
       secure: process.env.NODE_ENV !== "development",
     });
 
+    // Generate token
+    const verification_token = new Token({
+      user: newUser._id,
+      token: crypto.randomBytes(16).toString("hex"),
+      tokenType: "verify-account"
+    })
+
+    await verification_token.save()
+    // Send verification email
+    const mailOPtions = {
+      from: process.env.NODEMAILER_USER,
+      to: newUser.email,
+      subject: "Account verification",
+      text: `Hello ${newUser.fullname}, Please click this link http://localhost:5000/api/auth/verify-account/${verification_token.token}.`,
+    }
+
+    transporter.sendMail(mailOPtions, (error, info)=>{
+      if(error){
+        console.log("Email not send ", error)
+      }
+      // console.log("Sent")
+    })
     res
       .status(200)
-      .json({ message: "User created successfully", token: token });
+      .json({ message: "User created successfully", token: token, });
   } catch (error) {
     console.log("Error in SignUp controller ", error);
     res.status(500).json({ error: "Internal server error" });
@@ -129,6 +154,29 @@ console.log(profileImage)
     res.status(200).json({message: "Profile updated", user})
   } catch (error) {
     console.log("Error in update-profile controller ", error)
+    res.status(500).json({error: "Internal server error"})
+  }
+}
+
+export const VerifyAccount = async (req, res) =>{
+  const {token} = req.params
+
+  try {
+    const verifyToken = await Token.findOne({token: token})
+    if(!token) return res.status(400).json({error: "Token is invalid or expired"})
+
+    if(verifyToken.tokenType !== 'verify-account') return res.status(401).json({error: "Invalid token"})
+    
+      const user = await User.findById(verifyToken.user)
+      if(!user) return res.status(400).json({error: "User not found"})
+
+        user.isVerifed = true;
+       await user.save()
+       await Token.findByIdAndDelete(token._id)
+
+       res.status(200).json({message: "Account verified"})
+  } catch (error) {
+    console.log("Error in VerifyAccount controller ", error)
     res.status(500).json({error: "Internal server error"})
   }
 }

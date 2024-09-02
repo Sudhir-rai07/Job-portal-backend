@@ -1,6 +1,6 @@
 import path from 'path'
 import { Router } from "express";
-import { GetMe, Login, Logout, SignUp, UpdateProfile } from "../controllers/auth.controller.js";
+import { GetMe, Login, Logout, SignUp, UpdateProfile, VerifyAccount } from "../controllers/auth.controller.js";
 import protectRoute from '../middleware/protectRoute.js'
 
 import multer from 'multer'
@@ -25,5 +25,6 @@ router.post("/login", Login)
 router.post("/logout", Logout)
 router.get("/me",protectRoute, GetMe)
 router.put("/update-profile",upload.single("profileImage"), protectRoute,UpdateProfile)
+router.put("/verify-account/:token", VerifyAccount)
 
 export default router

@@ -23,6 +23,10 @@ const user_schema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    isVerifed: {
+      type: Boolean,
+      default: false
+    },
     profileImage: {
       type: String,
       default: ""
