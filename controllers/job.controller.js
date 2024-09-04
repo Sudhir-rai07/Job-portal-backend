@@ -48,5 +48,31 @@ export const DeleteJobPost = async (req, res) => {
     await Job.findByIdAndDelete(jobId);
 
     res.status(200).json({ message: "Post deleted" });
-  } catch (error) {}
+  } catch (error) {
+    console.log("Error in Delete controller ", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const UpdateJobPost = async (req, res) => {
+  const { id: jobId } = req.params;
+  const { userId } = req.user;
+  try {
+    const job = await Job.findById(jobId);
+    if (!job) return res.status(400).json({ error: "Job not found" });
+
+    if (job.employer.toString() !== userId.toString())
+      return res
+        .status(400)
+        .json({ error: "You are not authorized to perform this task." });
+
+    job.isAccepting = false;
+
+    await job.save();
+
+    res.status(200).json({ message: "Job post updated successfully" });
+  } catch (error) {
+    console.log("Error in Update Post controller ", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
