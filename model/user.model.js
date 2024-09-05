@@ -43,6 +43,10 @@ const user_schema = new mongoose.Schema(
       type: [String],
       default: []
     },
+    jobsApplied: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Job"
+    }]
   },
   { timestamps: true }
 );

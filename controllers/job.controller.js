@@ -1,4 +1,6 @@
+import Application from "../model/application.model.js";
 import Job from "../model/job.model.js";
+import User from "../model/user.model.js";
 
 export const PostJob = async (req, res) => {
   const {
@@ -73,6 +75,49 @@ export const UpdateJobPost = async (req, res) => {
     res.status(200).json({ message: "Job post updated successfully" });
   } catch (error) {
     console.log("Error in Update Post controller ", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Application controller
+
+export const ApplyForJob = async (req, res) => {
+  const { id: jobId } = req.params;
+  const { coverLetter } = req.body;
+  const { userId } = req.user;
+
+  try {
+    const user = await User.findById(userId)
+    const job = await Job.findById(jobId);
+    if (!job) return res.status(400).json({ error: "Can not find this job." });
+
+    if(user.jobsApplied.includes(jobId)) return res.status(400).json({error: "You have already applied for this job"})
+
+    if (job.employer.toString() === userId.toString())
+      return res
+        .status(401)
+        .json({ error: "You can not apply to your own application" });
+
+      //Check if applications for this is being accepted
+      if(!job.isAccepting) return res.status(400).json({error: "Sorry, We are no longer accepting application for this job"})
+
+    const newApplication = new Application({
+      applicant: userId,
+      job: jobId,
+      coverLetter: coverLetter,
+    });
+
+    await newApplication.save();
+
+    job.applications.push(newApplication._id);
+    user.jobsApplied.push(jobId)
+    // await job.save();
+    // await user.save()
+    Promise.all([job.save(), user.save()])
+
+    res.status(200).json({ message: "Application submited" });
+  } catch (error) {
+    console.log("Error in ApplyForJob controller ", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
