@@ -91,8 +91,10 @@ export const ApplyForJob = async (req, res) => {
     const job = await Job.findById(jobId);
     if (!job) return res.status(400).json({ error: "Can not find this job." });
 
+    //check is user have already applied for job
     if(user.jobsApplied.includes(jobId)) return res.status(400).json({error: "You have already applied for this job"})
 
+      // check if you are applying to self
     if (job.employer.toString() === userId.toString())
       return res
         .status(401)
@@ -101,6 +103,7 @@ export const ApplyForJob = async (req, res) => {
       //Check if applications for this is being accepted
       if(!job.isAccepting) return res.status(400).json({error: "Sorry, We are no longer accepting application for this job"})
 
+        // create new application
     const newApplication = new Application({
       applicant: userId,
       job: jobId,
