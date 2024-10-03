@@ -1,5 +1,6 @@
 import express from 'express'
 import dotenv from 'dotenv'
+import cors from 'cors'
 import { v2 as Cloudinary } from 'cloudinary'
 import cookieParser from 'cookie-parser'
 import connectToDB from './db/db.js'
@@ -18,9 +19,11 @@ Cloudinary.config({
 })
 
 //middlerware
+app.use(cors())
 app.use(express.json({limit: "5mb"}))
 app.use(express.urlencoded({extended: true}))
 app.use(cookieParser())
+
 
 //Route middlewares
 import authRoutes from './routes/auth.routes.js'

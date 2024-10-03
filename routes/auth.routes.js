@@ -1,6 +1,6 @@
 import path from 'path'
 import { Router } from "express";
-import { ChangePassword, ForgotPassword, GetMe, Login, Logout, ResetPassword, SignUp, UpdateProfile, VerifyAccount } from "../controllers/auth.controller.js";
+import { ChangePassword, FindUser, ForgotPassword, GetMe, Login, Logout, ResetPassword, SignUp, UpdateProfile, VerifyAccount } from "../controllers/auth.controller.js";
 import protectRoute from '../middleware/protectRoute.js'
 
 import multer from 'multer'
@@ -30,7 +30,8 @@ router.put("/update-profile",upload.single("profileImage"), protectRoute,UpdateP
 router.patch("/verify-account/:token", VerifyAccount)
 router.patch("/change-password",protectRoute, ChangePassword)
 
-router.get("/forgot-password", ForgotPassword)
+router.get("/find-user/:email", FindUser)
+router.post("/forgot-password", ForgotPassword)
 router.patch("/reset-password/:token", ResetPassword)
 
 export default router

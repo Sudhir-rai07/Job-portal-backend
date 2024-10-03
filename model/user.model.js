@@ -23,6 +23,11 @@ const user_schema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    gender: {
+      type: String,
+      default:null,
+      enum: ["male" , "female"],
+    },
     isVerifed: {
       type: Boolean,
       default: false
@@ -42,6 +47,14 @@ const user_schema = new mongoose.Schema(
     skills: {
       type: [String],
       default: []
+    },
+    education:{
+      type: String,
+      default: "",
+    },
+    address:{
+      type: String,
+      default:""
     },
     jobsApplied: [{
       type: mongoose.Schema.Types.ObjectId,

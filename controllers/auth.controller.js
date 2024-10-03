@@ -53,7 +53,7 @@ export const SignUp = async (req, res) => {
       from: process.env.NODEMAILER_USER,
       to: newUser.email,
       subject: "Account verification",
-      text: `Hello ${newUser.fullname}, Please click this link http://localhost:5000/api/auth/verify-account/${verification_token.token}.`,
+      text: `Hello ${newUser.fullname}, Please click this link ${process.env.CLIENT_URL}/verify-account/${verification_token.token}`,
     };
 
     transporter.sendMail(mailOPtions, (error, info) => {
@@ -115,19 +115,19 @@ export const Logout = async (req, res) => {
 export const GetMe = async (req, res) => {
   const { userId } = req.user;
   try {
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select("-password");
     res.status(200).json(user);
     res.status(200).json();
   } catch (error) {}
 };
 
 export const UpdateProfile = async (req, res) => {
-  const { resume, about, skills } = req.body;
+  const { resume, about, skills,education, address, fullname,gender } = req.body;
   let profileImage = req.file;
   const { userId } = req.user;
-  if (profileImage) console.log(profileImage);
+console.log(req.files)
   try {
-    const user = await User.findByIdAndUpdate(userId, {});
+    const user = await User.findByIdAndUpdate(userId, {}).select("-password");
     if (!user) return res.status(400).json({ error: "User not found" });
 
     if (profileImage) {
@@ -145,12 +145,15 @@ export const UpdateProfile = async (req, res) => {
 
     user.resume = resume || user.resume;
     user.about = about || user.about;
-    user.skills = skills || user.skills;
+    user.skills = skills ? JSON.parse(skills) : user.skills;  
     user.profileImage = profileImage || user.profileImage;
+    user.education = education || user.education
+    user.address = address || user.address
+    user.fullname = fullname || user.fullname
+    user.gender = gender || user.gender
 
     await user.save();
-    console.log(profileImage);
-    res.status(200).json({ message: "Profile updated", user });
+    res.status(200).json(user);
   } catch (error) {
     console.log("Error in update-profile controller ", error);
     res.status(500).json({ error: "Internal server error" });
@@ -246,7 +249,7 @@ export const ForgotPassword = async (req, res) => {
       from: process.env.NODEMAILER_USER,
       to: user.email,
       subject: "Reset password",
-      text: `Hello ${user.fullname}, Please click this link http://localhost:5000/api/auth/reset-password/${resetPasswordToken.token} to reset your password`,
+      text: `Hello ${user.fullname}, Please click this link ${process.env.CLIENT_URL}/reset-password/${resetPasswordToken.token} to reset your password`,
     };
 
     transporter.sendMail(mailOPtions, (error, info) => {
@@ -291,3 +294,15 @@ export const ResetPassword = async (req, res) => {
     res.status(500).json({ error: "Internal sever error" });
   }
 };
+
+export const FindUser = async (req, res) =>{
+const {email} = req.params
+try {
+  const user = await User.findOne({email}).select("-password")
+  if(!user) return res.status(404).json({error: "User not found"})
+    res.status(200).json(user)
+} catch (error) {
+  console.error(error)
+    res.status(500).json({ error: "Internal Server Error" })
+}
+}
