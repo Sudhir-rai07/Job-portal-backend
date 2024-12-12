@@ -36,6 +36,11 @@ const user_schema = new mongoose.Schema(
       type: String,
       default: ""
     },
+    role: {
+      type:String,
+      enum: ["job_seeker", "recruiter"],
+      required: true
+    },
     resume: {
       type: String,
       default: ""

@@ -7,7 +7,7 @@ import crypto from "crypto";
 import transporter from "../utils/email.setup.js";
 
 export const SignUp = async (req, res) => {
-  const { username, fullname, email, password } = req.body;
+  const { username, fullname, email, password, role } = req.body;
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser)
@@ -25,6 +25,7 @@ export const SignUp = async (req, res) => {
       fullname,
       email,
       password: hashPassword,
+      role
     });
 
     await newUser.save();
@@ -81,6 +82,9 @@ export const Login = async (req, res) => {
     if (!isCorrectPassword)
       return res.status(400).json({ error: "Invalid username or password" });
 
+    //TODO:
+    // if(!user.isVerifed) return res.status(400).json({error: "Your account is not verified"})
+
     // setCookieAndGenerateToken
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "15d",
@@ -117,15 +121,18 @@ export const GetMe = async (req, res) => {
   try {
     const user = await User.findById(userId).select("-password");
     res.status(200).json(user);
-    res.status(200).json();
-  } catch (error) {}
+  } catch (error) {
+    console.log("Error in GetMe controller ", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
 
 export const UpdateProfile = async (req, res) => {
-  const { resume, about, skills,education, address, fullname,gender } = req.body;
+  const { resume, about, skills, education, address, fullname, gender } =
+    req.body;
   let profileImage = req.file;
   const { userId } = req.user;
-console.log(req.files)
+  console.log(req.files);
   try {
     const user = await User.findByIdAndUpdate(userId, {}).select("-password");
     if (!user) return res.status(400).json({ error: "User not found" });
@@ -145,12 +152,12 @@ console.log(req.files)
 
     user.resume = resume || user.resume;
     user.about = about || user.about;
-    user.skills = skills ? JSON.parse(skills) : user.skills;  
+    user.skills = skills ? JSON.parse(skills) : user.skills;
     user.profileImage = profileImage || user.profileImage;
-    user.education = education || user.education
-    user.address = address || user.address
-    user.fullname = fullname || user.fullname
-    user.gender = gender || user.gender
+    user.education = education || user.education;
+    user.address = address || user.address;
+    user.fullname = fullname || user.fullname;
+    user.gender = gender || user.gender;
 
     await user.save();
     res.status(200).json(user);
@@ -165,7 +172,7 @@ export const VerifyAccount = async (req, res) => {
 
   try {
     const verifyToken = await Token.findOne({ token: token });
-    if (!token)
+    if (!verifyToken)
       return res.status(400).json({ error: "Token is invalid or expired" });
 
     if (verifyToken.tokenType !== "verify-account")
@@ -199,14 +206,15 @@ export const ChangePassword = async (req, res) => {
     if (!isCorrectPassword)
       return res.status(400).json({ error: "Current password is invalid" });
 
-    const isOldPassword = await bcrypt.compare(newPassword, user.password)
+    const isOldPassword = await bcrypt.compare(newPassword, user.password);
     if (isOldPassword)
-      return res.status(400).json({ error: "New password can not be same as old" });
+      return res
+        .status(400)
+        .json({ error: "New password can not be same as old" });
 
     const hashPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashPassword;
     await user.save();
-
 
     // Send email
     const mailOPtions = {
@@ -295,14 +303,14 @@ export const ResetPassword = async (req, res) => {
   }
 };
 
-export const FindUser = async (req, res) =>{
-const {email} = req.params
-try {
-  const user = await User.findOne({email}).select("-password")
-  if(!user) return res.status(404).json({error: "User not found"})
-    res.status(200).json(user)
-} catch (error) {
-  console.error(error)
-    res.status(500).json({ error: "Internal Server Error" })
-}
-}
+export const FindUser = async (req, res) => {
+  const { email } = req.params;
+  try {
+    const user = await User.findOne({ email }).select("-password");
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};

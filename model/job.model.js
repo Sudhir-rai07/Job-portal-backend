@@ -6,7 +6,7 @@ const jobSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User"
     },
-    title: {
+    role: {
       type: String,
       required: true,
       trim: true,
@@ -23,14 +23,12 @@ const jobSchema = new mongoose.Schema(
     },
     employment_type: {
       type: String,
-      enum: [
-        "Full-Time",
-        "Part-Time",
-        "Contract",
-        "Temporary",
-        "Internship",
-        "Freelance",
-      ],
+      // enum: [
+      //   "Fulltime",
+      //   "Parttime",
+      //   "Internship",
+      // ],
+      default: "Fulltime",
       required: true,
     },
     description: {
@@ -50,6 +48,14 @@ const jobSchema = new mongoose.Schema(
     },
     application_deadline: {
       type: Date,
+    },
+    experience: {
+      type: String,
+      default:  "Fresher",
+    },
+    language:{
+      type:String,
+      default:"English"
     },
     isAccepting: {
       type: Boolean,
